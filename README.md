@@ -1,0 +1,141 @@
+# ZendeskAI
+
+This project is designed to integrate Zendesk and Jira, leveraging AI to enhance ticket management and documentation processes. It allows for the fetching of tickets from Zendesk, tagging them using AI, and generating documentation by comparing tickets with existing articles.
+
+## PLEASE NOTE: This project is for illustrative purposes only. Files in the `constants/` directory have been redacted for security reasons. In it's current state the project will not function correctly. You will need to create your own versions of these files with the appropriate IDs.
+
+## Getting Started
+
+To get started with the project, follow these steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/JoePendo/zendeskAI-public.git
+   cd zendeskAI-public
+   ```
+
+2. Install the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the server:
+
+   ```bash
+   node api/server/server.mjs
+   ```
+
+4. Server running at `http://localhost:3000`.
+
+## Required
+
+To run the project, you need to have the following environment variables set up in a `.env` file in the root directory:
+
+- `ZENDESK_API_TOKEN`: Your Zendesk API token.
+- `ZENDESK_SUBDOMAIN`: Your Zendesk subdomain (e.g., `yourcompany`).
+- `JIRA_API_TOKEN`: Your Jira API token.
+- `JIRA_SUBDOMAIN`: Your Jira subdomain (e.g., `yourcompany`).
+- `GOOGLE_API_KEY`: Google Cloud API key with access to Generative AI (this can be modified to use CLI)
+
+Google CLI authentication is required for Firebase and Google Cloud Storage access. You can set this up by running:
+
+```bash
+gcloud auth application-default login
+```
+
+### Optional
+
+- `OPENAI_API_KEY`: OpenAI API key for alternative AI services.
+
+## Flags
+
+- `--start-date=`: Specify the start date for fetching tickets (format: YYYY-MM-DD). Default is the first day of the current month. (Required)
+
+- `--end-date=`: Specify the end date for filtering tickets (format: YYYY-MM-DD)
+
+- `--tpsa=`: Specify the technical product sub-area for filtering tickets.
+
+- `--tpa=`: Specify the technical product area for pulling documentation.
+
+- `--doc-process`: Specify the document processing option. This will pull any new Zendesk Articles from the Knowledge base for the specified `--tpa` and and store them in the database. (`--tpa=` is required for this option).
+
+- `--reprocess`: Specify the reprocessing option. This will delete all Zendesk Articles stored in the project for the supplied `tpa` and re-fetch them from the Knowledge Base. (`doc-process` && `--tpa=` are required for this option).
+
+- `--tag-tickets`: This flag will pull all tickets from Zendesk for the specified dates, and find any that do not have tags. AI will then be used to tag these tickets based on the content of the ticket.
+
+**A note on rate limiting:** This project uses AI to process tickets and articles, which may result in rate limiting by the AI provider.
+
+The project has a local rate limiter, however, if you encounter rate limiting issues, you may need to reduce the size of your request. This can be done by narrowing the date range.
+
+Additionally, the AI services are designed to handle rate limiting gracefully by retrying requests after a delay.
+
+## Project Structure
+
+The project follows a standard structure:
+
+```
+ZendeskAI/
+├── api/
+│   ├── controllers/
+│   ├── routes/
+│   ├── server/
+├── constants/
+│   ├── section-ids.json
+│   └── zendesk-technical-product-areas.json
+├── database/
+│   └── zendeskDocs/
+├── services/
+│   ├── ai/
+│   │   ├── geminiCompare.mjs
+│   │   └── ticketTagAI.mjs
+│   ├── jira/
+│   │   └── fetchJira.mjs
+│   ├── zendesk/
+│   │   ├── docsRagIngest.mjs
+│   │   ├── fetchArticles.mjs
+│   │   ├── fetchDocs.mjs
+│   │   ├── fetchTicketFields.mjs
+│   │   ├── fetchTickets.mjs
+│   │   ├── postArticle.mjs
+│   │   └── postTicketTag.mjs
+├── utils/
+│   ├── dateProcessing.mjs
+│   ├── generatePromptContent.mjs
+│   ├── rateLimiter.mjs
+│   ├── splitTickets.mjs
+│   ├── ticketFilterLogic.mjs
+│   └── zendeskApiPull.mjs
+└── README.md
+└── .gitignore
+└── package.json
+└── package-lock.json
+
+- `api/`: Contains the server-side code, including controllers, routes, and server configuration.
+  - `controllers/`: Contains the logic for handling requests and responses.
+  - `routes/`: Contains the route definitions for the API endpoints.
+  - `server/`: Contains the main server file and configuration.
+
+- `constants/`: Contains static json files with data to access our Knowledge Base and Support Tickets.
+
+- `database/`: Contains the database configuration and models. When pulling Knowledge Base documents from Zendesk Articles, they are stored here.
+  - `zendeskDocs/`: Contains the Zendesk articles fetched from the Knowledge Base.
+
+- `services/`: Contains business logic and service layer code.
+  - `ai/`: Contains AI-related services, such as ticket tagging and comparison.
+  - `jira/`: Contains services for fetching data from Jira.
+  - `zendesk/`: Contains services for interacting with Zendesk, including fetching articles and tickets, and posting articles and tags.
+
+- `utils/`: Contains utility functions and helpers.
+
+- `package.json`: Contains project metadata and dependencies.
+
+- `README.md`: This file.
+
+- `.gitignore`: Specifies files and directories to be ignored by Git.
+
+- `package-lock.json`: Contains the exact versions of dependencies installed.
+```
+
+Example workflows can be found at [this link](./zendeskAI%20architecture.pdf).
