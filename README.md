@@ -2,7 +2,7 @@
 
 This project is designed to integrate Zendesk and Jira, leveraging AI to enhance ticket management and documentation processes. It allows for the fetching of tickets from Zendesk, tagging them using AI, and generating documentation by comparing tickets with existing articles.
 
-## PLEASE NOTE: This project is for illustrative purposes only. Files in the `constants/` directory have been redacted for security reasons. In it's current state the project will not function correctly. You will need to create your own versions of these files with the appropriate IDs.
+## PLEASE NOTE: This project is for illustrative purposes only. Files in the `constants/` directory have been removed for security reasons. In it's current state the project will not function correctly. You will need to create your own versions of these files with the appropriate IDs.
 
 ## Getting Started
 
@@ -49,21 +49,25 @@ gcloud auth application-default login
 
 - `OPENAI_API_KEY`: OpenAI API key for alternative AI services.
 
-## Flags
+## Query Params
 
-- `--start-date=`: Specify the start date for fetching tickets (format: YYYY-MM-DD). Default is the first day of the current month. (Required)
+- `startDate=`: Format: YYYY-MM-DD. Specify the start date for fetching tickets. Default is the first day of the current month. (Required).
+  
+- `selectedAI=`: String. Accepts 'gemini' or 'openai'. Default is 'gemini'
 
-- `--end-date=`: Specify the end date for filtering tickets (format: YYYY-MM-DD)
+- `endDate=`: Format: YYYY-MM-DD. Specify the end date for filtering tickets.
 
-- `--tpsa=`: Specify the technical product sub-area for filtering tickets.
+- `tpsa=`: String. Specify the technical product sub-area for filtering tickets.
 
-- `--tpa=`: Specify the technical product area for pulling documentation.
+- `tpa=`: String. Specify the technical product area for pulling documentation.
 
-- `--doc-process`: Specify the document processing option. This will pull any new Zendesk Articles from the Knowledge base for the specified `--tpa` and and store them in the database. (`--tpa=` is required for this option).
+- `docProcess=`: Boolean. Specify the document processing option. This will pull any new Zendesk Articles from the Knowledge base for the specified `--tpa` and and store them in the database. (`tpa=` is required for this option).
 
-- `--reprocess`: Specify the reprocessing option. This will delete all Zendesk Articles stored in the project for the supplied `tpa` and re-fetch them from the Knowledge Base. (`doc-process` && `--tpa=` are required for this option).
+- `reprocess=`: Boolean. Specify the reprocessing option. This will delete all Zendesk Articles stored in the project for the supplied `tpa` and re-fetch them from the Knowledge Base. (`doc-process` && `tpa=` are required for this option).
 
-- `--tag-tickets`: This flag will pull all tickets from Zendesk for the specified dates, and find any that do not have tags. AI will then be used to tag these tickets based on the content of the ticket.
+- `exportTickets=`: Boolean. Pull tickets from Zendesk and export to CSV.
+
+- `exportArticles=`: Boolean. Pull previously generated AI articles from Zendesk and ezport to PDF (`tpa=` is required).
 
 **A note on rate limiting:** This project uses AI to process tickets and articles, which may result in rate limiting by the AI provider.
 
@@ -79,7 +83,6 @@ The project follows a standard structure:
 ZendeskAI/
 ├── api/
 │   ├── controllers/
-│   ├── routes/
 │   ├── server/
 ├── constants/
 │   ├── section-ids.json
@@ -88,7 +91,9 @@ ZendeskAI/
 │   └── zendeskDocs/
 ├── services/
 │   ├── ai/
-│   │   ├── geminiCompare.mjs
+│   │   ├── articleCompare.mjs
+│   │   ├── articleVectorSearch.mjs
+│   │   ├── agenerateEmbeddings.mjs
 │   │   └── ticketTagAI.mjs
 │   ├── jira/
 │   │   └── fetchJira.mjs
@@ -96,13 +101,15 @@ ZendeskAI/
 │   │   ├── docsRagIngest.mjs
 │   │   ├── fetchArticles.mjs
 │   │   ├── fetchDocs.mjs
-│   │   ├── fetchTicketFields.mjs
 │   │   ├── fetchTickets.mjs
-│   │   ├── postArticle.mjs
-│   │   └── postTicketTag.mjs
+│   └── └── postArticle.mjs
 ├── utils/
 │   ├── dateProcessing.mjs
+│   ├── exportTickets.mjs
+│   ├── dateProcessing.mjs
+│   ├── fetchZendeskArticlesForReview.mjs
 │   ├── generatePromptContent.mjs
+│   ├── ragProcessing.mjs
 │   ├── rateLimiter.mjs
 │   ├── splitTickets.mjs
 │   ├── ticketFilterLogic.mjs
@@ -114,7 +121,6 @@ ZendeskAI/
 
 - `api/`: Contains the server-side code, including controllers, routes, and server configuration.
   - `controllers/`: Contains the logic for handling requests and responses.
-  - `routes/`: Contains the route definitions for the API endpoints.
   - `server/`: Contains the main server file and configuration.
 
 - `constants/`: Contains static json files with data to access our Knowledge Base and Support Tickets.
@@ -138,4 +144,3 @@ ZendeskAI/
 - `package-lock.json`: Contains the exact versions of dependencies installed.
 ```
 
-Example workflows can be found at [this link](./zendeskAI%20architecture.pdf).
