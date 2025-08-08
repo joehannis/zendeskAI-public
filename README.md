@@ -74,8 +74,6 @@ To run the project, you need to have the following environment variables set up 
 
 - `ZENDESK_API_TOKEN`: Your Zendesk API token.
 - `ZENDESK_SUBDOMAIN`: Your Zendesk subdomain (e.g., `yourcompany`).
-- `JIRA_API_TOKEN`: Your Jira API token.
-- `JIRA_SUBDOMAIN`: Your Jira subdomain (e.g., `yourcompany`).
 - `GOOGLE_API_KEY`: Google Cloud API key with access to Generative AI (this can be modified to use CLI)
 
 Google CLI authentication is required for Firebase and Google Cloud Storage access. You can set this up by running:
@@ -133,8 +131,6 @@ ZendeskAI/
 │   │   ├── articleVectorSearch.mjs
 │   │   ├── agenerateEmbeddings.mjs
 │   │   └── ticketTagAI.mjs
-│   ├── jira/
-│   │   └── fetchJira.mjs
 │   ├── zendesk/
 │   │   ├── docsRagIngest.mjs
 │   │   ├── fetchArticles.mjs
